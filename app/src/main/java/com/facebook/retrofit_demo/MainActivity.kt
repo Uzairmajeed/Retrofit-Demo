@@ -26,27 +26,13 @@ class MainActivity : AppCompatActivity() {
         buttonget=findViewById(R.id.get)
         buttonpost=findViewById(R.id.post)
         buttonput=findViewById(R.id.put)
-        val cacheSize = (10 * 1024 * 1024).toLong() // 10 MB cache size (adjust as needed)
-        val cacheDirectory = File(applicationContext.cacheDir, "http-cache")
-        val cache = Cache(cacheDirectory, cacheSize)
-
-
-        val OkHttpClient=OkHttpClient.Builder()
-            .cache(cache)
-            .readTimeout(30,TimeUnit.SECONDS)
-            .writeTimeout(30,TimeUnit.SECONDS)
-            .build();
+        val apiService = ApiService(this)
 
 
         buttonget.setOnClickListener{
 
-            val retrofit=Retrofit.Builder()
-                .baseUrl("https://jsonplaceholder.typicode.com/")
-                .client(OkHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+             val jsonPlaceHolderApi=apiService.getService()
 
-            val jsonPlaceHolderApi=retrofit.create(JsonPlaceHolderApi::class.java)
             val call:Call<List<Post>> =  jsonPlaceHolderApi.getPosts()
             call.enqueue(object : Callback<List<Post>> {
                 override fun onResponse(call: Call<List<Post>>?, response: Response<List<Post>>?) {
@@ -73,13 +59,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonpost.setOnClickListener{
-            val retrofit=Retrofit.Builder()
-                .baseUrl("https://jsonplaceholder.typicode.com/")
-                .client(OkHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
 
-            val jsonPlaceHolderApi=retrofit.create(JsonPlaceHolderApi::class.java)
 
             val newPost = Post(userId = 1, id = 0, title = "New Post Title", text = "New Post Text")
            /* val userIdPart = MultipartBody.Part.createFormData("userId", "1")
@@ -88,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             val textPart = MultipartBody.Part.createFormData("text", "New Post Text")
             val partsList = listOf(userIdPart, idPart, titlePart, textPart)
 */
+            val jsonPlaceHolderApi=apiService.getService()
             val createcall: Call<Post> = jsonPlaceHolderApi.postdata(newPost)
             createcall.enqueue(object :Callback<Post>{
                 override fun onResponse(call: Call<Post>?, response: Response<Post>?) {
@@ -118,15 +99,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonput.setOnClickListener(){
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com/")
-            .client(OkHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val jsonPlaceHolderApi = retrofit.create(JsonPlaceHolderApi::class.java)
-
-        // Create a new Post object with updated data
+            val jsonPlaceHolderApi=apiService.getService()
+            // Create a new Post object with updated data
         val updatedPost = Post(userId = 1, id = 1, title = "Updated Post Title", text = "Updated Post Text")
 
         val putCall: Call<Post> = jsonPlaceHolderApi.putPost(1, updatedPost) // Replace '1' with the ID of the post you want to update
